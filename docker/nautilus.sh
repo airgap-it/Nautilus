@@ -59,27 +59,47 @@ Examples:
 EOF
 }
 
-# parse command line arguments
-SHORT_OPTS='ab:cdhp:tv'
-LONG_OPTS='all,custom-build-path:,conseil,database,help,path-to-config:,tezos,volume'
-ARGS=$(getopt -o $SHORT_OPTS -l $LONG_OPTS -n "$CMD" -- "$@" 2>/dev/null)
-#check getopt command failure
-(( $? != 0 )) && fatal "invalid options"
-eval set -- "${ARGS}"
-# set execution flags and/or execute functions for each option
-while true ; do
-    case "$1" in
-        -a|--all) CONSEIL=1 ; POSTGRES=1 ; TEZOS=1 ; shift ;;
-        -b|--custom-build-path) build_name="$2" ; shift 2 ;;
-	    -c|--conseil) CONSEIL=1 ; shift ;;
-        -d|--database) POSTGRES=1 ; shift ;;
-        -h|--help) display_usage && exit 0 ; shift ;;
-        -p|--path-to-config) path_to_config="$2" ; shift 2 ;;
-        -t|--tezos) TEZOS=1 ; shift ;;
-        -v|--volume) VOLUME=1 ; shift ;;
-        --) shift ; break ;;
-    esac
-done
+read_arguments () {
+	while [[ $# -gt 0 ]]; do
+		local argument_name="$1"
+		case $argument_name in
+	        -a|--all) CONSEIL=1 ; POSTGRES=1 ; TEZOS=1 ; shift ;;
+            -b|--custom-build-path) build_name="$2" ; shift 2 ;;
+	        -c|--conseil) CONSEIL=1 ; shift ;;
+            -d|--database) POSTGRES=1 ; shift ;;
+            -h|--help) display_usage && exit 0 ; shift ;;
+            -p|--path-to-config) path_to_config="$2" ; shift 2 ;;
+            -t|--tezos) TEZOS=1 ; shift ;;
+            -v|--volume) VOLUME=1 ; shift ;;
+            --) shift ; break ;;
+	    esac
+	done
+	return 0
+}
+
+read_arguments "$@"
+
+# # parse command line arguments
+# SHORT_OPTS='ab:cdhp:tv'
+# LONG_OPTS='all,custom-build-path:,conseil,database,help,path-to-config:,tezos,volume'
+# ARGS=$(getopt -o $SHORT_OPTS -l $LONG_OPTS -n "$CMD" -- "$@" 2>/dev/null)
+# #check getopt command failure
+# (( $? != 0 )) && fatal "invalid options"
+# eval set -- "${ARGS}"
+# # set execution flags and/or execute functions for each option
+# while true ; do
+#     case "$1" in
+#         -a|--all) CONSEIL=1 ; POSTGRES=1 ; TEZOS=1 ; shift ;;
+#         -b|--custom-build-path) build_name="$2" ; shift 2 ;;
+# 	    -c|--conseil) CONSEIL=1 ; shift ;;
+#         -d|--database) POSTGRES=1 ; shift ;;
+#         -h|--help) display_usage && exit 0 ; shift ;;
+#         -p|--path-to-config) path_to_config="$2" ; shift 2 ;;
+#         -t|--tezos) TEZOS=1 ; shift ;;
+#         -v|--volume) VOLUME=1 ; shift ;;
+#         --) shift ; break ;;
+#     esac
+# done
 
 # ensure necessary command line parameters were specified(man test to see usages, checks contents of a string)
 [[ -z "${CONSEIL}${POSTGRES}${TEZOS}${VOLUME}" ]] && display_usage \

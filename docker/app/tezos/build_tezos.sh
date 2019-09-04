@@ -34,12 +34,16 @@ build_tezos () {
 
     #replace tezos network in dockerfile
     tz_dockerfile="$TEZOS_WORK_DIR"/dockerfile
-    sed -i "s/protocol/$tezos_network/g" "$tz_dockerfile"
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        sed -i '' "s/protocol/$tezos_network/g" "$tz_dockerfile"
+    else
+        sed -i "s/protocol/$tezos_network/g" "$tz_dockerfile"
+    fi
 
 
     #build and run docker container
     docker build -f "$TEZOS_WORK_DIR"/dockerfile -t tezos-node-"$DEPLOYMENT_ENV" .
     (( $? == 0 )) || fatal "Unable to build tezos container"
-    docker run --name=tezos-node-"$DEPLOYMENT_ENV" --network=nautilus --mount type=bind,src=/mnt/tezos-"$DEPLOYMENT_ENV",dst=/var/run/tezos/node -d -p 8732:8732 -p 9732:9732 tezos-node-"$DEPLOYMENT_ENV"
+    docker run --name=tezos-node-"$DEPLOYMENT_ENV" --network=nautilus -v $HOME/mnt/tezos-"$DEPLOYMENT_ENV":/var/run/tezos/node:Z -d -p 8732:8732 -p 9732:9732 tezos-node-"$DEPLOYMENT_ENV"
     (( $? == 0 )) || fatal "Unable to run tezos container, please check ports and current configurations"
 }
